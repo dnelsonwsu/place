@@ -6,6 +6,7 @@ using System.Drawing;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.Serialization;
 
 namespace place.Models
 {
@@ -18,6 +19,7 @@ namespace place.Models
 
         public int Version { get; set; }
 
+        [IgnoreDataMember]
         public byte[] Image { get; set; }
 
         
