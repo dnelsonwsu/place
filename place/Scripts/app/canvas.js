@@ -1,4 +1,5 @@
 ﻿var INITIAL_ZOOM_LEVEL = 20;
+var CANVAS_BACKDROP_COLOR = "#2b2b2b"
 
 function canvasHelper(canvasImage) {
 
@@ -26,7 +27,8 @@ function canvasHelper(canvasImage) {
 
         ctx.save();
         ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = CANVAS_BACKDROP_COLOR;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.restore();
 
         ctx.drawImage(canvasImage, 0, 0);
@@ -165,8 +167,6 @@ function canvasHelper(canvasImage) {
 
     this.setPixel = function (x, y, color) {
 
-        //canvasImage.set(x, y, color);
-        //redraw();
         ctx.fillStyle = color;
         ctx.fillRect(x, y, 1, 1);
         ctx.save();

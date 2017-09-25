@@ -42,24 +42,17 @@ $(document).ready(function () {
  *
  * @param {any} eventParams
  */
-var c = 0
 function canvasOnClick(eventParams) {
-    var cc = c;
-    c = c + 1;
-    console.log('start: ' + cc.toString());
     if (selectedColorElement) {
         var canvas = $('canvas');
         var cursorX = eventParams.offsetX || (eventParams.pageX - canvas.offsetLeft);
         var cursorY = eventParams.offsetY || (eventParams.pageY - canvas.offsetTop);
 
-        console.log('getPositionInImage: ' + cc.toString());
         var pos = canvasHelper.getPositionInImage(cursorX, cursorY);
-        console.log('done getPositionInImage: ' + cc.toString());
         pos.x = parseInt(pos.x);
         pos.y = parseInt(pos.y);
 
         if (pos.x >= 0 && pos.y >= 0 && pos.x < canvasImage.width && pos.y < canvasImage.height) {
-            console.log('if: ' + cc.toString());
             // Make API call
             $.ajax({
                 type: "POST",
@@ -72,14 +65,13 @@ function canvasOnClick(eventParams) {
                 }),
                 dataType: 'json',
                 success: checkForCanvasUpdates
-            }).done(function () { console.log('ajax success: ' + cc.toString());});
+            })
 
             // Update pixel on canvas
             canvasHelper.setPixel(pos.x, pos.y, selectedColor);
         }
 
     }
-    console.log('done: ' + cc.toString());
 }
 
 

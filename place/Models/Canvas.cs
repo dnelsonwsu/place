@@ -27,39 +27,11 @@ namespace place.Models
         {
             Bitmap bitmap = new Bitmap(1000, 1000);
 
-            /*Random rand = new Random();
-            Color prevColor = Color.FromArgb(rand.Next(255), rand.Next(255), rand.Next(255));
-
-            int r = 0;
-            int g = 0;
-            int b = 0;
-
-            for(int y = 0; y < bitmap.Height; y++)
+            using (Graphics gfx = Graphics.FromImage(bitmap))
+            using (SolidBrush brush = new SolidBrush(Color.FromArgb(255, 255, 255)))
             {
-                for(int x = 0; x < bitmap.Width; x++)
-                {
-                    r+=5;
-                    if(r > 255)
-                    {
-                        r = 0;
-                        g+=5;
-                        if(g > 255)
-                        {
-                            g = 0;
-                            r = 0;
-                            b+=5;
-                            if(b > 255)
-                            {
-                                g = 0;
-                                r = 0;
-                                b = 0;
-                            }
-                        }
-                    }
-                    bitmap.SetPixel(x, y, Color.FromArgb(r,g,b));
-                }
-            }*/
-
+                gfx.FillRectangle(brush, 0, 0, bitmap.Width, bitmap.Height);
+            }
 
             this.SetBitmap(bitmap);
         }
