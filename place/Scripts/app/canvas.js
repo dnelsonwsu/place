@@ -3,6 +3,9 @@ var CANVAS_BACKDROP_COLOR = "#2b2b2b"
 
 function canvasHelper(canvasImage) {
 
+    var imageCanvas = document.createElement('imageCanvas');
+
+
     //Initialize canvases drawable area
     var canvas = document.getElementsByTagName('canvas')[0];
 
@@ -31,7 +34,7 @@ function canvasHelper(canvasImage) {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.restore();
 
-        ctx.drawImage(canvasImage, 0, 0);
+        ctx.drawImage(imageCanvas, 0, 0);
 
     }
     redraw();
@@ -160,8 +163,14 @@ function canvasHelper(canvasImage) {
         return canvasImage;
     };
 
-    this.setImage = function(image) {
-        canvasImage = image;
+    this.setImage = function (image) {
+
+        imageCanvas.width = image.width;
+        imageCanvas.height = image.height;
+
+        var imageCanvasCtx = canvas.getContext('2d');
+        imageCanvasCtx.drawImage(imageCanvas, 0, 0);
+
         redraw();
     };
 
