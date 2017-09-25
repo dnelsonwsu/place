@@ -50,7 +50,7 @@ namespace place.Controllers
             Canvas canvas = canvasContext.Canvases.Find(name);
             if(canvas == null)
             {
-                NotFound();
+                throw new HttpException(404, "Not found"); ;
             }
 
             String colorInHex = System.Drawing.ColorTranslator.ToHtml(canvas.GetBitmap().GetPixel(x, y));
@@ -58,24 +58,34 @@ namespace place.Controllers
             return pixel;
         }
 
+        private static Dictionary<string, object> canvasLocks = new Dictionary<string, object>();
+
         //POST Canvas/{name}/Pixel
         [Route("{name}/Pixel")]
         [HttpPost]
         public void SetPixel(String name, [FromBody]Pixel pixel)
         {
-            Canvas canvas = canvasContext.Canvases.Find(name);
-            if (canvas == null)
+            if(!canvasLocks.ContainsKey(name))
             {
-                NotFound();
+                canvasLocks[name] = new object();
             }
+            lock(canvasLocks[name])
+            {
+                Canvas canvas = canvasContext.Canvases.Find(name);
+                if (canvas == null)
+                {
+                    NotFound();
+                }
 
-            Color colorToSet = ColorTranslator.FromHtml(pixel.Color);
-            Bitmap bitmap = canvas.GetBitmap();
-            bitmap.SetPixel(pixel.X, pixel.Y, colorToSet);
-            canvas.SetBitmap(bitmap);
+                Color colorToSet = ColorTranslator.FromHtml(pixel.Color);
+                Bitmap bitmap = canvas.GetBitmap();
+                bitmap.SetPixel(pixel.X, pixel.Y, colorToSet);
+                canvas.SetBitmap(bitmap);
 
-            canvasContext.SaveChanges();
+                canvas.Version++;
+
+                canvasContext.SaveChanges();
+            }
         }
-        
     }
 }

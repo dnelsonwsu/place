@@ -27,43 +27,39 @@ namespace place.Models
         {
             Bitmap bitmap = new Bitmap(1000, 1000);
 
-            Random rand = new Random();
+            /*Random rand = new Random();
             Color prevColor = Color.FromArgb(rand.Next(255), rand.Next(255), rand.Next(255));
-            int prevX = rand.Next(0, bitmap.Width - 1);
-            int prevY = rand.Next(0, bitmap.Height - 1);
 
-            int loops = 10000;
+            int r = 0;
+            int g = 0;
+            int b = 0;
 
-            while (loops > 0)
+            for(int y = 0; y < bitmap.Height; y++)
             {
-                int newX = prevX + rand.Next(-2, 3);
-                if (newX < 0)
+                for(int x = 0; x < bitmap.Width; x++)
                 {
-                    newX = 0;
+                    r+=5;
+                    if(r > 255)
+                    {
+                        r = 0;
+                        g+=5;
+                        if(g > 255)
+                        {
+                            g = 0;
+                            r = 0;
+                            b+=5;
+                            if(b > 255)
+                            {
+                                g = 0;
+                                r = 0;
+                                b = 0;
+                            }
+                        }
+                    }
+                    bitmap.SetPixel(x, y, Color.FromArgb(r,g,b));
                 }
-                if (newX > bitmap.Width - 1)
-                {
-                    newX = bitmap.Width - 1;
-                }
+            }*/
 
-                int newY = prevY + rand.Next(-2, 3);
-                if (newY < 0)
-                {
-                    newY = 0;
-                }
-                if (newY > bitmap.Width - 1)
-                {
-                    newY = bitmap.Width - 1;
-                }
-
-                prevColor = Color.FromArgb(0, 255, 0);
-                bitmap.SetPixel(newX, newY, prevColor);
-
-                prevX = newX;
-                prevY = newY;
-
-                loops--;
-            }
 
             this.SetBitmap(bitmap);
         }
