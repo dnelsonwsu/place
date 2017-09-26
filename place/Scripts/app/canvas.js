@@ -1,11 +1,10 @@
 ﻿var INITIAL_ZOOM_LEVEL = 20;
 var CANVAS_BACKDROP_COLOR = "#2b2b2b"
 
-function canvasHelper(canvasImage) {
+function canvasHelper(initialImage) {
 
-    var imageCanvas = document.createElement('imageCanvas');
-
-
+    var hiddenCanvas = document.createElement('canvas');
+    
     //Initialize canvases drawable area
     var canvas = document.getElementsByTagName('canvas')[0];
 
@@ -19,6 +18,7 @@ function canvasHelper(canvasImage) {
 
     // Adds enhanced transformation methods onto context instance
     trackTransforms(ctx);
+    
 
     function redraw() {
 
@@ -34,7 +34,7 @@ function canvasHelper(canvasImage) {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.restore();
 
-        ctx.drawImage(imageCanvas, 0, 0);
+        ctx.drawImage(hiddenCanvas, 0, 0);
 
     }
     redraw();
@@ -68,36 +68,36 @@ function canvasHelper(canvasImage) {
                 //Make sure canvas is within bounds
                 var upperLeft = ctx.transformedPoint(0, 0);
                 var lowerRight = ctx.transformedPoint(canvas.width, canvas.height);
-                if (upperLeft.x >= 0 && lowerRight.x <= canvasImage.width) {
+                
 
-                    ctx.translate(moveX, 0);
+                //X
+                ctx.translate(moveX, 0);
 
-                    upperLeft = ctx.transformedPoint(0, 0);
-                    lowerRight = ctx.transformedPoint(canvas.width, canvas.height);
+                upperLeft = ctx.transformedPoint(0, 0);
+                lowerRight = ctx.transformedPoint(canvas.width, canvas.height);
 
-                    if (upperLeft.x < 0) {
-                        ctx.translate(-moveX, 0);
-                    }
-                    if (lowerRight.x > canvasImage.width) {
-                        ctx.translate(-moveX, 0);
-                    }
-
+                if (upperLeft.x < 0 && moveX > 0) {
+                    ctx.translate(-moveX, 0);
                 }
-                if (upperLeft.y >= 0 && lowerRight.y <= canvasImage.height) {
-                    ctx.translate(0, moveY);
-
-                    upperLeft = ctx.transformedPoint(0, 0);
-                    lowerRight = ctx.transformedPoint(canvas.width, canvas.height);
-
-                    if (upperLeft.y < 0) {
-                        ctx.translate(0, -moveY);
-                    }
-
-                    if (lowerRight.y > canvasImage.height) {
-                        ctx.translate(0, -moveY);
-                    }
-
+                if (lowerRight.x > canvasImage.width && moveX < 0) {
+                    ctx.translate(-moveX, 0);
                 }
+
+                // Y
+                ctx.translate(0, moveY);
+
+                upperLeft = ctx.transformedPoint(0, 0);
+                lowerRight = ctx.transformedPoint(canvas.width, canvas.height);
+
+                if (upperLeft.y < 0) {
+                    ctx.translate(0, -moveY);
+                }
+
+                if (lowerRight.y > canvasImage.height) {
+                    ctx.translate(0, -moveY);
+                }
+
+
                 redraw();
 
             }
@@ -147,10 +147,20 @@ function canvasHelper(canvasImage) {
             return evt.preventDefault() && false;
         };
 
+        window.addEventListener('resize', function () {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+
+            redraw();
+        }, true)
+
         canvas.addEventListener('DOMMouseScroll', handleScroll, false);
         canvas.addEventListener('mousewheel', handleScroll, false);
 
+        lastX = 500;
+        lastY = 500;
         zoom(INITIAL_ZOOM_LEVEL);
+
     }
 
    
@@ -165,20 +175,23 @@ function canvasHelper(canvasImage) {
 
     this.setImage = function (image) {
 
-        imageCanvas.width = image.width;
-        imageCanvas.height = image.height;
+        hiddenCanvas.width = image.width;
+        hiddenCanvas.height = image.height;
 
-        var imageCanvasCtx = canvas.getContext('2d');
-        imageCanvasCtx.drawImage(imageCanvas, 0, 0);
+        var imageCanvasCtx = hiddenCanvas.getContext('2d');
+        imageCanvasCtx.drawImage(image, 0, 0);
 
         redraw();
     };
 
     this.setPixel = function (x, y, color) {
 
-        ctx.fillStyle = color;
-        ctx.fillRect(x, y, 1, 1);
-        ctx.save();
+        var hiddenCanvasCtx = hiddenCanvas.getContext('2d');
+
+        hiddenCanvasCtx.fillStyle = color;
+        hiddenCanvasCtx.fillRect(x, y, 1, 1);
+        hiddenCanvasCtx.save();
+        redraw();
     };
 
     this.disableDragging = function() {
@@ -188,6 +201,8 @@ function canvasHelper(canvasImage) {
     this.enableDragging = function() {
         draggingDisabled = false;
     }
+
+    this.setImage(initialImage);
 
 };
 

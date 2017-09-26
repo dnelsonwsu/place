@@ -12,7 +12,7 @@ namespace place.Controllers
     [System.Web.Http.RoutePrefix("api/Canvas")]
     public class CanvasController : ApiController
     {
-        private CanvasContext canvasContext = new CanvasContext();
+        private PlaceContext canvasContext = new PlaceContext();
 
         // GET: Canvas
         [System.Web.Http.Route("")]
@@ -42,28 +42,13 @@ namespace place.Controllers
             canvasContext.SaveChanges();
         }
 
-        //GET Canvas/{name}/Pixel
-        [Route("{name}/Pixel")]
-        [HttpGet]
-        public Pixel GetPixel(String name, [FromUri] int x, [FromUri] int y)
-        {
-            Canvas canvas = canvasContext.Canvases.Find(name);
-            if(canvas == null)
-            {
-                throw new HttpException(404, "Not found"); ;
-            }
-
-            String colorInHex = System.Drawing.ColorTranslator.ToHtml(canvas.GetBitmap().GetPixel(x, y));
-            Pixel pixel = new Pixel{ X = x, Y = y, Color = colorInHex};
-            return pixel;
-        }
 
         private static Dictionary<string, object> canvasLocks = new Dictionary<string, object>();
 
         //POST Canvas/{name}/Pixel
         [Route("{name}/Pixel")]
         [HttpPost]
-        public void SetPixel(String name, [FromBody]Pixel pixel)
+        public void SetPixel(String name, [FromBody]PixelChange pixel)
         {
             if(!canvasLocks.ContainsKey(name))
             {

@@ -14,10 +14,11 @@ namespace place.Models
     {
 
         [Key]
-        [Column("Name")]
         public string Name { get; set; }
 
         public int Version { get; set; }
+
+        public int ImageVersion { get; set; }
 
         [IgnoreDataMember]
         public byte[] Image { get; set; }

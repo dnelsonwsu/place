@@ -1,5 +1,5 @@
 ﻿// Constants //
-var POLLING_INTERVAL = 100000;
+var POLLING_INTERVAL = 5000;
 
 
 // Globals //
@@ -18,6 +18,8 @@ $(document).ready(function () {
         canvasHelper = new canvasHelper(canvasImage);
         canvasHelper.setupScalingAndZooming();
 
+        $('#loading-spinner').remove();
+
         // Callback methods for user interaction with canvas
         $('canvas').on('mousemove', canvasOnMouseMove);
         $('canvas').on('click', canvasOnClick);
@@ -34,7 +36,7 @@ $(document).ready(function () {
     });
 
     // Setup polling to check for updated version of canvas
-    pollForCanvasUpdates();
+    setTimeout(pollForCanvasUpdates, POLLING_INTERVAL);
 });
 
 
@@ -56,15 +58,14 @@ function canvasOnClick(eventParams) {
             // Make API call
             $.ajax({
                 type: "POST",
-                url: 'api/Canvas/default/Pixel',
+                url: 'api/PixelChange?canvasName=default',
                 contentType: 'application/json; charset=utf-8',
                 data: JSON.stringify({
                     x: pos.x,
                     y: pos.y,
                     color: selectedColor
                 }),
-                dataType: 'json',
-                success: checkForCanvasUpdates
+                dataType: 'json'
             })
 
             // Update pixel on canvas
@@ -80,18 +81,22 @@ function checkForCanvasUpdates() {
 
     return $.ajax({
         url: 'api/Canvas/default',
-        success: function(data) {
-            if (data.version != canvasInfo.version) {
-                canvasImage = new Image();
-                canvasImage.src = "CanvasImage?name=default&version=" + data.version;
-                canvasImage.onload = function () {
-                    canvasHelper.setImage(canvasImage);
-                }
-            }
-        },
         cache: false
-    })
-   
+    }).then(function (serversCanvasInfo) {
+
+        if (serversCanvasInfo.version > canvasInfo.version) {
+            // Get pixels that have changed after current canvas version
+            return $.ajax({
+                url: 'api/PixelChange?canvasName=default&afterVersion=' + canvasInfo.version,
+                cache: false
+            }).then(function (pixelChanges) {
+                for (var i = 0; i < pixelChanges.length; i++) {
+                    canvasHelper.setPixel(pixelChanges[i].x, pixelChanges[i].y, pixelChanges[i].color);
+                }
+                canvasInfo = serversCanvasInfo;
+            });
+        }
+    });
 }
 
 function pollForCanvasUpdates() {

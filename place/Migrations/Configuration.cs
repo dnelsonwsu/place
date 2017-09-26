@@ -5,14 +5,14 @@ namespace place.Migrations
     using System.Data.Entity.Migrations;
     using System.Linq;
 
-    internal sealed class Configuration : DbMigrationsConfiguration<place.DAL.CanvasContext>
+    internal sealed class Configuration : DbMigrationsConfiguration<place.DAL.PlaceContext>
     {
         public Configuration()
         {
             AutomaticMigrationsEnabled = false;
         }
 
-        protected override void Seed(place.DAL.CanvasContext context)
+        protected override void Seed(place.DAL.PlaceContext context)
         {
             //  This method will be called after migrating to the latest version.
 

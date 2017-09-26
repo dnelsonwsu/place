@@ -24,6 +24,17 @@ textarea {
     }
 }
 
+.spinner {
+    width: 200px;
+    height: 200px;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+}
+
 .full-height-page {
     display: flex;
     flex-direction: column;
@@ -36,7 +47,7 @@ textarea {
     overflow: auto;
 }
 
-.content {
+.canvas {
     flex: 1 1 auto;
     overflow: auto;
 }
@@ -101,3 +112,4 @@ textarea {
 .placing-pixel {
     cursor: pointer;
 }
+

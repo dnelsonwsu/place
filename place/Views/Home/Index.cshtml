@@ -3,9 +3,17 @@
 }
 
 <!--Main content area-->
-<canvas class="content" id="canvas"></canvas>
+<canvas class="canvas" id="canvas">
+
+</canvas>
+
+<div id="loading-spinner" class="spinner">
+    <img src="~/Images/Spinner.gif" />
+</div>
+
+<!--toolbar area-->
 <div class="toolbar navbar-inverse">
-    <div id="cursorPos" class="cursor-position">test</div>
+    <div id="cursorPos" class="cursor-position">(0,0)</div>
     
     <div class="palette">
         <div class="palette-color" style="background-color: rgb(255, 255, 255)"></div>
@@ -29,9 +37,6 @@
         <div class="palette-color" style="background-color: rgb(255, 0, 255)"></div>
         <div class="palette-color" style="background-color: rgb(130, 0, 128)"></div>
     </div>
-
-    
-
 
         
 </div>

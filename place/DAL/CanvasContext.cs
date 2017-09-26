@@ -7,12 +7,13 @@ using place.Models;
 
 namespace place.DAL
 {
-    public class CanvasContext : DbContext
+    public class PlaceContext : DbContext
     {
-        public CanvasContext() : base("CanvasContext")
+        public PlaceContext() : base("CanvasContext")
         { }
 
         public DbSet<Canvas> Canvases { get; set; }
+        public DbSet<PixelChange> PixelChanges { get; set; }
 
     }
 }
