@@ -8,6 +8,9 @@ using System.Runtime.Serialization;
 
 namespace place.Models
 {
+    /// <summary>
+    /// Represents a modification to a canvas pixel
+    /// </summary>
     public class PixelChange
     {
         [Key]
@@ -17,6 +20,7 @@ namespace place.Models
         public int X { get; set; }
         public int Y { get; set; }
 
+        // Which version of the canvas does this change correspond to
         public int CanvasVersion { get; set; }
 
         [IgnoreDataMember]

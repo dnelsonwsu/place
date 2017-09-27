@@ -3,8 +3,9 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewBag.Title - My ASP.NET Application</title>
-    @Styles.Render("~/Content/css")
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/bundles/css")
+    @Styles.Render("~/Content/Css/Site.css")
     @Scripts.Render("~/bundles/modernizr")
 
     <script type = 'text/javascript' >
@@ -23,7 +24,7 @@
 <body>
     <div class="full-height-page">
         <div class="navbar-inverse header">
-            <strong class="title-text">Place clone</strong>
+            <strong class="title-text">/r/place clone</strong>
             @Html.Partial("_LoginPartial")
         </div>
 
@@ -34,8 +35,8 @@
 
     @Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/bootstrap")
-    @Scripts.Render("~/Scripts/app/canvas.js")
-    @Scripts.Render("~/Scripts/app/home.js")
+    @Scripts.Render("~/Content/Scripts/app/canvas-renderer.js")
+    @Scripts.Render("~/Content/Scripts/app/home.js")
     
     @RenderSection("scripts", required: false)
 </body>

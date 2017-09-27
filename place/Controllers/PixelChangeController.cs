@@ -15,6 +15,8 @@ namespace place.Controllers
     {
         private PlaceContext placeContext = new PlaceContext();
 
+        /// GET PixelChange?canvasName=""&afterVersion=#
+        /// Queries for all pixel changes on specified canvas after specified version
         [HttpGet]
         public IEnumerable<PixelChange> GetPixelChanges([FromUri]String canvasName, [FromUri]int afterVersion)
         {
@@ -22,6 +24,8 @@ namespace place.Controllers
             return pixelChanges.ToList();
         }
 
+        /// POST PixelChange?canvasName=""
+        /// Creates a new pixel change(effectively sets a pixel on specified canvas)
         [HttpPost]
         public PixelChange SetPixelChange([FromUri]String canvasName, [FromBody]PixelChange pixelChange)
         {

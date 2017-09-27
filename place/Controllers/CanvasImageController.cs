@@ -13,7 +13,10 @@ namespace place.Controllers
     {
         private PlaceContext placeContext = new PlaceContext();
 
-        // GET: CanvasImage
+
+        /// GET: CanvasImage
+        /// Returns a .png image representing the canvas. 
+        /// 
         public ActionResult Index(String name)
         {
             Canvas canvas = placeContext.Canvases.Find(name);
@@ -29,6 +32,10 @@ namespace place.Controllers
             return File(ms.ToArray(), "image/png");
         }
 
+        /// <summary>
+        /// Helper method that applies any pixel changes between the image version and the latest version
+        /// </summary>
+        /// <param name="canvas">Which canvas to apply changes to</param>
         private void ApplyChangedPixelsToImage(Canvas canvas)
         {
             // Get changed pixels

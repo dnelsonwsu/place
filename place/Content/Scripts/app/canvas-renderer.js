@@ -1,25 +1,45 @@
-﻿var INITIAL_ZOOM_LEVEL = 20;
+﻿// Constants //
+var INITIAL_ZOOM_LEVEL = 20;
 var CANVAS_BACKDROP_COLOR = "#2b2b2b"
+var SCALE_FACTOR = 1.1;
 
-function canvasHelper(initialImage) {
 
-    var hiddenCanvas = document.createElement('canvas');
-    
-    //Initialize canvases drawable area
-    var canvas = document.getElementsByTagName('canvas')[0];
+function canvasRenderer(initialImage) {
 
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
+    // This is what will get redrawn onto the main canvas.
+    var hiddenCanvas = document.createElement('canvas');    
 
-    var ctx = canvas.getContext('2d');
-    ctx.imageSmoothingEnabled = false;
+    // Main canvas's context
+    var ctx;
 
     var draggingDisabled = false;
+    var lastX, lastY;
 
-    // Adds enhanced transformation methods onto context instance
-    trackTransforms(ctx);
+    /**
+     * Initializes canvas
+     */
+    function initializeCanvas() {
+
+        //Initialize canvases drawable area
+        var canvas = document.getElementsByTagName('canvas')[0];
+
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+
+        ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+
+        lastX = initialImage.width / 2;
+        lastY = initialImage.height / 2;
+
+        // Decorates various methods to keep track of zooming/panning transforms
+        trackTransforms(ctx);
+    }
+    initializeCanvas();
     
-
+    /**
+     * Redraws the canvas
+     */
     function redraw() {
 
         // Clear the entire canvas
@@ -37,13 +57,32 @@ function canvasHelper(initialImage) {
         ctx.drawImage(hiddenCanvas, 0, 0);
 
     }
-    redraw();
 
-    this.setupScalingAndZooming = function () {
-        var lastX = canvas.width / 2, lastY = canvas.height / 2;
+
+   /**
+    * Registers event callback methods to handle zooming/panning on the canvas
+    */
+    this.setupPanningAndZooming = function () {
+       
 
         var dragStart, dragged;
 
+        /**
+         * Helper method used to draw a border around the canvas pixel that cursor is currently over
+         */
+        var drawCurrentPixelBorder = function() {
+            var pixelPt = ctx.transformedPoint(lastX, lastY);
+            pixelPt.x = parseInt(pixelPt.x);
+            pixelPt.y = parseInt(pixelPt.y);
+
+            ctx.lineWidth = .1;
+            ctx.strokeStyle = 'red';
+            ctx.strokeRect(pixelPt.x, pixelPt.y, 1, 1);
+        }
+
+       /**
+        * Callback for when the mouse is pressed down on canvas. If dragging record start position
+        */
         canvas.addEventListener('mousedown', function (evt) {
 
             if (!draggingDisabled) {
@@ -56,9 +95,15 @@ function canvasHelper(initialImage) {
             
         }, false);
 
+       /**
+        * Callback for when the mouse cursor moves. If dragging, translate canvas.
+        * Also updates current pixel rectangle
+        */
         canvas.addEventListener('mousemove', function (evt) {
+
             lastX = evt.offsetX || (evt.pageX - canvas.offsetLeft);
             lastY = evt.offsetY || (evt.pageY - canvas.offsetTop);
+
             dragged = true;
             if (dragStart) {
                 var pt = ctx.transformedPoint(lastX, lastY);
@@ -69,87 +114,104 @@ function canvasHelper(initialImage) {
                 var upperLeft = ctx.transformedPoint(0, 0);
                 var lowerRight = ctx.transformedPoint(canvas.width, canvas.height);
                 
-
-                //X
+                // Check X
                 ctx.translate(moveX, 0);
 
                 upperLeft = ctx.transformedPoint(0, 0);
                 lowerRight = ctx.transformedPoint(canvas.width, canvas.height);
 
-                if (upperLeft.x < 0 && moveX > 0) {
-                    ctx.translate(-moveX, 0);
+                if (moveX > 0 &&            // Moving left
+                    upperLeft.x < 0) {      // Left side of canvas is out of bounds
+                    ctx.translate(-moveX, 0);   // Undo translation
                 }
-                if (lowerRight.x > canvasImage.width && moveX < 0) {
-                    ctx.translate(-moveX, 0);
+                if (moveX < 0 &&                            // Moving right
+                    lowerRight.x > canvasImage.width) {     // Right side of canvas is out of bounds
+                    ctx.translate(-moveX, 0);   // Undo translation
                 }
 
-                // Y
+                // Check Y
                 ctx.translate(0, moveY);
 
                 upperLeft = ctx.transformedPoint(0, 0);
                 lowerRight = ctx.transformedPoint(canvas.width, canvas.height);
 
-                if (upperLeft.y < 0) {
-                    ctx.translate(0, -moveY);
+                if (moveY > 0 &&            // Moving up
+                    upperLeft.y < 0) {      // Top side of canvas is out of bounds
+                    ctx.translate(0, -moveY);   // Undo translation
                 }
 
-                if (lowerRight.y > canvasImage.height) {
-                    ctx.translate(0, -moveY);
+                if (moveY < 0 &&                            // Moving down
+                    lowerRight.y > canvasImage.height) {    // Bottom side of canvas is out of bounds
+                    ctx.translate(0, -moveY);   // Undo translation
                 }
-
-
-                redraw();
 
             }
+
+            redraw();
+            drawCurrentPixelBorder();
+
         }, false);
 
+       /**
+        * Callback for when the mouse button is released. Stops dragging.
+        */
         canvas.addEventListener('mouseup', function (evt) {
             dragStart = null;
         }, false);
 
-        var scaleFactor = 1.1;
-
+        /**
+         * Zooms in or out of canvas
+         * @param clicks - How many steps to zoom in(if positive) or out(if negative)
+         */
         var zoom = function (clicks) {
             var pt = ctx.transformedPoint(lastX, lastY);
 
+            // Apply zoom
             ctx.translate(pt.x, pt.y);
-            var factor = Math.pow(scaleFactor, clicks);
+            var factor = Math.pow(SCALE_FACTOR, clicks);
             ctx.scale(factor, factor);
             ctx.translate(-pt.x, -pt.y);
 
-
+            // Check to ensure canvas is in bounds
             var lowerRight = ctx.transformedPoint(canvas.width, canvas.height);
 
-            if (lowerRight.x > canvasImage.width) {
-                ctx.translate(-(canvasImage.width - lowerRight.x), 0)
+            if (lowerRight.x > canvasImage.width) {    // If canvas is off screen to left(If the canvas pixel under (width, height) is greater than width)
+                ctx.translate(-(canvasImage.width - lowerRight.x), 0)   // Move canvas to right
             }
 
-            if (lowerRight.y > canvasImage.height) {
+            if (lowerRight.y > canvasImage.height) {    // If canvas is off screen to top(If the canvas pixel under (width, height) is greater than height)
                 ctx.translate(0, -(canvasImage.height - lowerRight.y))
             }
+
+
             var lowerRight = ctx.transformedPoint(canvas.width, canvas.height);
-
-
             var upperLeft = ctx.transformedPoint(0, 0); //where on image is screen(0,0)
-            if (upperLeft.x < 0) {
+
+            if (upperLeft.x < 0) {  // If canvas is off screen to the right(if the canvas pixel under(0,0) is < 0)
                 ctx.translate(upperLeft.x, 0);
             }
-            if (upperLeft.y < 0) {
+            if (upperLeft.y < 0) {  // If canvas is off screen to the left(if the canvas pixel under(0,0) is < 0
                 ctx.translate(0, upperLeft.y);
             }
 
             redraw();
+            drawCurrentPixelBorder();
         }
 
-        var handleScroll = function (evt) {
-            var delta = evt.wheelDelta ? evt.wheelDelta / 40 : evt.detail ? -evt.detail : 0;
+        /**
+         * Callback method that is called when the mouse's scroll wheel is scrolled. Zooms in/out of canvas
+         */
+        var handleScroll = function (eventParams) {
+            var delta = eventParams.wheelDelta ? eventParams.wheelDelta / 40 : eventParams.detail ? -eventParams.detail : 0;
             if (delta) zoom(delta);
-            return evt.preventDefault() && false;
+            return eventParams.preventDefault() && false;
         };
 
+        /**
+         * Callback method that is called when window is resized
+         */
         window.addEventListener('resize', function () {
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
+            initializeCanvas();
 
             redraw();
         }, true)
@@ -157,22 +219,28 @@ function canvasHelper(initialImage) {
         canvas.addEventListener('DOMMouseScroll', handleScroll, false);
         canvas.addEventListener('mousewheel', handleScroll, false);
 
-        lastX = 500;
-        lastY = 500;
         zoom(INITIAL_ZOOM_LEVEL);
 
     }
 
    
-
+    /**
+     * Obtains pixel coordinates for screen X, Y coordinates(ie which pixel is at (500,500) )
+     */
     this.getPositionInImage = function (x, y) {
         return ctx.transformedPoint(x, y);
     };
 
+    /**
+     * Obtains the canvas image
+     */
     this.getCanvasImage = function () {
         return canvasImage;
     };
 
+    /**
+     * Sets the canvas image to specified image
+     */
     this.setImage = function (image) {
 
         hiddenCanvas.width = image.width;
@@ -184,6 +252,9 @@ function canvasHelper(initialImage) {
         redraw();
     };
 
+    /**
+     * Sets the specified pixel on canvas
+     */
     this.setPixel = function (x, y, color) {
 
         var hiddenCanvasCtx = hiddenCanvas.getContext('2d');
@@ -194,10 +265,16 @@ function canvasHelper(initialImage) {
         redraw();
     };
 
+    /**
+     * Disable canvas dragging
+     */
     this.disableDragging = function() {
         draggingDisabled = true;
     }
 
+    /**
+     * Enable canvas dragging
+     */
     this.enableDragging = function() {
         draggingDisabled = false;
     }
@@ -206,8 +283,10 @@ function canvasHelper(initialImage) {
 
 };
 
-// Adds ctx.getTransform() - returns an SVGMatrix
-// Adds ctx.transformedPoint(x,y) - returns an SVGPoint
+/**
+ * Decorates context methods to keep track of current transformations
+ * 
+ */
 function trackTransforms(ctx) {
     var svg = document.createElementNS("http://www.w3.org/2000/svg", 'svg');
     var xform = svg.createSVGMatrix();

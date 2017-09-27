@@ -14,25 +14,36 @@ namespace place.Controllers
     {
         private PlaceContext canvasContext = new PlaceContext();
 
-        // GET: Canvas
+        /// GET: Canvas
+        /// Obtains list of all canvases
+        /// 
         [System.Web.Http.Route("")]
         public IEnumerable<Canvas> Get()
         {
             return canvasContext.Canvases.ToList();
         }
 
-        // GET: Canvas/{name}
+        /// GET: Canvas/{name}
+        /// Obtains specified canvas by name
+        /// 
         [System.Web.Http.Route("{name}")]
         public Canvas GetByName(String name)
         {
             return canvasContext.Canvases.Find(name);
         }
 
-        //PUT Canvas/{name}
+        /// PUT Canvas/{name}
+        /// Creates a new empty canvas with the specified name
+        /// 
         [Route("{name}")]
         [HttpPut]
-        public void CreateCanvas(String name)
+        public Canvas CreateCanvas(String name)
         {
+            if(canvasContext.Canvases.Find(name) != null)
+            {
+                BadRequest("A canvas with this name already exists");
+            }
+
             Canvas newCanvas = new Canvas();
             newCanvas.Name = name;
             newCanvas.Version = 1;
@@ -40,37 +51,10 @@ namespace place.Controllers
 
             canvasContext.Canvases.Add(newCanvas);
             canvasContext.SaveChanges();
+
+            return newCanvas;
         }
 
 
-        private static Dictionary<string, object> canvasLocks = new Dictionary<string, object>();
-
-        //POST Canvas/{name}/Pixel
-        [Route("{name}/Pixel")]
-        [HttpPost]
-        public void SetPixel(String name, [FromBody]PixelChange pixel)
-        {
-            if(!canvasLocks.ContainsKey(name))
-            {
-                canvasLocks[name] = new object();
-            }
-            lock(canvasLocks[name])
-            {
-                Canvas canvas = canvasContext.Canvases.Find(name);
-                if (canvas == null)
-                {
-                    NotFound();
-                }
-
-                Color colorToSet = ColorTranslator.FromHtml(pixel.Color);
-                Bitmap bitmap = canvas.GetBitmap();
-                bitmap.SetPixel(pixel.X, pixel.Y, colorToSet);
-                canvas.SetBitmap(bitmap);
-
-                canvas.Version++;
-
-                canvasContext.SaveChanges();
-            }
-        }
     }
 }
