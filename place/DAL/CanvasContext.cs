@@ -13,6 +13,7 @@ namespace place.DAL
         { }
 
         public DbSet<Canvas> Canvases { get; set; }
+        public DbSet<CanvasImage> CanvasImages { get; set; }
         public DbSet<PixelChange> PixelChanges { get; set; }
 
     }

@@ -11,23 +11,27 @@ var canvasRenderer;
 
 $(document).ready(function () {
 
-    // Obtain the default canvas image
-    canvasImage = new Image();
-    canvasImage.src = "CanvasImage?name=default";
-    canvasImage.onload = function () {
-        canvasRenderer = new canvasRenderer(canvasImage);
-        canvasRenderer.setupPanningAndZooming();
-
-        $('#loading-spinner').remove();
-
-        // Callback methods for user interaction with canvas
-        $('canvas').on('mousemove', canvasOnMouseMove);
-        $('canvas').on('click', canvasOnClick);
-    }
-
     // Obtain current canvas info
     $.get('api/Canvas/default', function (data) {
         canvasInfo = data;
+
+        // Obtain the default canvas image
+        canvasImage = new Image();
+        canvasImage.src = "CanvasImage?name=default&version=" + canvasInfo.version;
+        canvasImage.onload = function () {
+            canvasRenderer = new canvasRenderer(canvasImage);
+            canvasRenderer.setupPanningAndZooming();
+
+            $('#loading-spinner').remove();
+
+            // Callback methods for user interaction with canvas
+            $('canvas').on('mousemove', canvasOnMouseMove);
+            $('canvas').on('click', canvasOnClick);
+
+            // Poll to check for updated version of canvas
+            pollForCanvasUpdates();
+        }
+
     });
 
     // Setup callback methods for palette colors
@@ -35,8 +39,7 @@ $(document).ready(function () {
         $(this).on("click", paletteColorOnClick);
     });
 
-    // Poll to check for updated version of canvas
-    pollForCanvasUpdates();
+
 });
 
 /**

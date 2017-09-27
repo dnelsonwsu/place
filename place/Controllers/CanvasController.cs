@@ -12,7 +12,7 @@ namespace place.Controllers
     [System.Web.Http.RoutePrefix("api/Canvas")]
     public class CanvasController : ApiController
     {
-        private PlaceContext canvasContext = new PlaceContext();
+        private PlaceContext databaseContext = new PlaceContext();
 
         /// GET: Canvas
         /// Obtains list of all canvases
@@ -20,7 +20,7 @@ namespace place.Controllers
         [System.Web.Http.Route("")]
         public IEnumerable<Canvas> Get()
         {
-            return canvasContext.Canvases.ToList();
+            return databaseContext.Canvases.ToList();
         }
 
         /// GET: Canvas/{name}
@@ -29,7 +29,7 @@ namespace place.Controllers
         [System.Web.Http.Route("{name}")]
         public Canvas GetByName(String name)
         {
-            return canvasContext.Canvases.Find(name);
+            return databaseContext.Canvases.Find(name);
         }
 
         /// PUT Canvas/{name}
@@ -39,7 +39,7 @@ namespace place.Controllers
         [HttpPut]
         public Canvas CreateCanvas(String name)
         {
-            if(canvasContext.Canvases.Find(name) != null)
+            if(databaseContext.Canvases.Find(name) != null)
             {
                 BadRequest("A canvas with this name already exists");
             }
@@ -47,12 +47,50 @@ namespace place.Controllers
             Canvas newCanvas = new Canvas();
             newCanvas.Name = name;
             newCanvas.Version = 1;
-            newCanvas.InitializeBitmap();
+            databaseContext.Canvases.Add(newCanvas);
+            databaseContext.SaveChanges();
 
-            canvasContext.Canvases.Add(newCanvas);
-            canvasContext.SaveChanges();
+            CanvasImage canvasImage = new CanvasImage();
+            canvasImage.InitializeBitmap();
+            canvasImage.canvas = databaseContext.Canvases.Find(name);
+            canvasImage.Name = name;
+            databaseContext.CanvasImages.Add(canvasImage);
+
+            databaseContext.SaveChanges();
 
             return newCanvas;
+        }
+
+        /// DELETE Canvas/{name}
+        /// Deletes canvas and associated resources
+        ///
+        [Route("{name}")]
+        [HttpDelete]
+        public void DeleteCanvas(String name)
+        {
+            Canvas canvas = databaseContext.Canvases.Find(name);
+            if (canvas == null)
+            {
+                NotFound();
+            }
+            databaseContext.Canvases.Remove(canvas);
+
+            CanvasImage canvasImage = databaseContext.CanvasImages.Find(name);
+            if(canvasImage != null)
+            {
+                databaseContext.CanvasImages.Remove(canvasImage);
+            }
+            
+
+            List<PixelChange> pixelChanges = databaseContext.PixelChanges.Where(p => p.Canvas.Name == canvas.Name).ToList();
+            foreach(PixelChange pixelChange in pixelChanges)
+            {
+                databaseContext.PixelChanges.Remove(pixelChange);
+            }
+
+            databaseContext.SaveChanges();
+
+            
         }
 
 
